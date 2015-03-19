@@ -37,17 +37,8 @@ RETRY_COUNT=60
 # Change permissions on private key
 chmod 400 $JENKINS_SLAVE_PRIVATE_KEY
 
-# Download the cloud-config file
-wget --no-check-certificate https://raw.githubusercontent.com/italiangrid/ci-scripts/master/openstack/coreos-cloudinit/user-data.yml -O ./user-data.yml
-download_status=$?
-
-if [ ${download_status} -ne 0 ]; then
-  echo "Cannot download the config file for setting up the machine, quitting..."
-  exit 1
-fi
-
 # Substitute the real token for docker registry authentication
-sed -i 's@auth": ""@auth": "'${DOCKER_REGISTRY_AUTH_TOKEN}'"@g' ./user-data.yml
+sed -i 's@auth": ""@auth": "'${DOCKER_REGISTRY_AUTH_TOKEN}'"@g' ./openstack/coreos-cloudinit/user-data.yml
 
 # delete running machine
 del_output=$(nova delete $MACHINE_NAME)
@@ -63,7 +54,7 @@ if [[ "${del_output}" != ${NO_SERVER_MSG}* ]]; then
 fi
 
 # start the vm and wait until it gets up
-nova boot --image ${MACHINE_IMAGE} --flavor ${MACHINE_FLAVOR} --user-data ./user-data.yml --key-name ${MACHINE_KEY_NAME} --security-groups ${MACHINE_SECGROUPS} ${MACHINE_NAME}
+nova boot --image ${MACHINE_IMAGE} --flavor ${MACHINE_FLAVOR} --user-data ./openstack/coreos-cloudinit/user-data.yml --key-name ${MACHINE_KEY_NAME} --security-groups ${MACHINE_SECGROUPS} ${MACHINE_NAME}
 boot_status=$?
 
 if [ ${boot_status} -ne 0 ]; then
