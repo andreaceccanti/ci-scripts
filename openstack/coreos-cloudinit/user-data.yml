@@ -32,7 +32,7 @@ write_files:
 - path: /etc/systemd/system/docker.service.d/50-insecure-registry.conf
   content: |
     [Service]
-    Environment=DOCKER_OPTS='--insecure-registry="0.0.0.0/0"'
+    Environment=DOCKER_OPTS=--storage-driver=btrfs --insecure-registry="0.0.0.0/0"
 
 - path: /etc/ssl/certs/igi-test-ca.pem
   permissions: 0644
@@ -98,18 +98,18 @@ coreos:
       Type=oneshot
       RemainAfterExit=yes
       ExecStart=/usr/bin/mkdir -p /media/eph0
-  - name: media-eph0.mount
+  - name: var-lib-docker.mount
     command: start
     content: |
       [Unit]
-      Description=Mount ephemeral to /media/eph0
+      Description=Mount ephemeral to /var/lib/docker
       Requires=format-ephemeral.service
-      After=format-ephemeral.service create-eph0.service
-      Before=set-permissions-eph0.service
+      After=format-ephemeral.service
+      Before=docker.service
 
       [Mount]
       What=/dev/vdb
-      Where=/media/eph0
+      Where=/var/lib/docker
       Type=btrfs
   - name: set-permissions-eph0.service
     command: start
@@ -154,3 +154,4 @@ coreos:
 
       [Install]
       WantedBy=multi-user.target
+      
