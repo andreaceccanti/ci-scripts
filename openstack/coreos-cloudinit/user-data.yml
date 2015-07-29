@@ -17,6 +17,18 @@ users:
   - docker
 
 write_files:
+- path: /etc/ntp.conf
+  content: |
+    server ripe.cnaf.infn.it
+    server ntp-1.infn.it
+    # by default act only as a basic NTP client
+    restrict -4 default nomodify nopeer noquery notrap
+    restrict -6 default nomodify nopeer noquery notrap
+    #
+    # # Local users may interrogate the ntp server more closely.
+    restrict 127.0.0.1
+    restrict [::1]
+
 - path: /etc/sysctl.d/disable_hardlink_protection.conf
   permissions: 0644
   content: |
