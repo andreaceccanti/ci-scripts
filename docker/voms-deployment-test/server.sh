@@ -50,6 +50,7 @@ fi
 if [ -z "${SKIP_SERVER}" ]; then
   remove_container voms-server
   docker run -d \
+    -e "VOMS_REPO=${VOMS_REPO}" \
     -e "MODE=${MODE}" \
     -e "PLATFORM=${PLATFORM}" \
     -v /sync \
