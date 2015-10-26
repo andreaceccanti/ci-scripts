@@ -6,7 +6,7 @@ sh clean.sh
 MODE=${MODE:-clean}
 PLATFORM=${PLATFORM:-EL6}
 
-VOMSREPO=${VOMSREPO:-http://radiohead.cnaf.infn.it:9999/view/REPOS/job/repo_voms_develop_SL6/lastSuccessfulBuild/artifact/voms-develop_sl6.repo}
+VOMS_REPO=${VOMS_REPO:-http://radiohead.cnaf.infn.it:9999/view/REPOS/job/repo_voms_develop_SL6/lastSuccessfulBuild/artifact/voms-develop_sl6.repo}
 
 VO1=${VO1:-vo.0}
 VO1_HOST=${VO1_HOST:-voms-server}
@@ -62,7 +62,7 @@ remove_container voms-ts
 
 # run VOMS testsuite when deployment is over
 docker run \
-  -e "VOMSREPO=${VOMSREPO}" \
+  -e "VOMS_REPO=${VOMS_REPO}" \
   -e "VO1=${VO1}" \
   -e "VO1_HOST=${VO1_HOST}" \
   -e "VO1_PORT=${VO1_PORT}" \
