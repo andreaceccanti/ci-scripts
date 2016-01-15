@@ -17,6 +17,7 @@ MACHINE_KEY_NAME=${MACHINE_KEY_NAME:-jenkins}
 MACHINE_FLAVOR=${MACHINE_FLAVOR:-cnaf.medium.plus}
 MACHINE_SECGROUPS=${MACHINE_SECGROUPS:-jenkins-slave}
 
+USER_DATA_FILE_PATH=${USER_DATA_FILE_PATH:-openstack/coreos-cloudinit/jenkins-slave-nobtrfs.yml}
 DOCKER_REGISTRY_URL=${DOCKER_REGISTRY_URL:-http://cloud-vm128.cloud.cnaf.infn.it}
 DOCKER_REGISTRY_AUTH_TOKEN=${DOCKER_REGISTRY_AUTH_TOKEN}
 
@@ -38,7 +39,7 @@ RETRY_COUNT=60
 chmod 400 $JENKINS_SLAVE_PRIVATE_KEY
 
 # Substitute the real token for docker registry authentication
-sed -i 's@auth": ""@auth": "'${DOCKER_REGISTRY_AUTH_TOKEN}'"@g' ./openstack/coreos-cloudinit/user-data.yml
+sed -i 's@auth": ""@auth": "'${DOCKER_REGISTRY_AUTH_TOKEN}'"@g' ${USER_DATA_FILE_PATH}
 
 # delete running machine
 del_output=$(nova delete $MACHINE_NAME)
@@ -54,7 +55,8 @@ if [[ "${del_output}" != ${NO_SERVER_MSG}* ]]; then
 fi
 
 # start the vm and wait until it gets up
-nova boot --image ${MACHINE_IMAGE} --flavor ${MACHINE_FLAVOR} --user-data ./openstack/coreos-cloudinit/user-data.yml --key-name ${MACHINE_KEY_NAME} --security-groups ${MACHINE_SECGROUPS} ${MACHINE_NAME}
+nova boot --image ${MACHINE_IMAGE} --flavor ${MACHINE_FLAVOR} --user-data ${USER_DATA_FILE_PATH} \
+  --key-name ${MACHINE_KEY_NAME} --security-groups ${MACHINE_SECGROUPS} ${MACHINE_NAME}
 boot_status=$?
 
 if [ ${boot_status} -ne 0 ]; then
