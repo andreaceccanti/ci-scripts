@@ -1,0 +1,166 @@
+#cloud-config
+
+---
+
+users:
+- name: core
+  passwd: $6$rounds=4096$kE9bqO7G2bHIG$jd5FbUFNeh8zO3SMUifX6ypkDVIvNHbk9klkJhqk2ROOu/kOzU3QRQwEwyY0OUSVNiP0pLhdOI.3ccZ6WbUSa1
+  ssh_authorized_keys:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDAjeLbypc7mmllwLgeVTh85s42ctrt4NhIyoW2oyyMkfGA+7LxDCoui0ttXIl06ATA7vDnuMpuQpPtW6V+4K7Mb65mQOOcy+aooQhLSdxhRNxiYmcJ80SK2lded0HiJUPi8H0iVF5ZiYh3ZYargI38Q182nAgcqPIFEmCgJ+h74d/BpE8LgfoB2fGHznShPjECrrDqruwnzjVljVKVK1PRSyfxoDLKT+ha26IDVTp3BimXOA/Iq53U0EPYP4n8S8EZfdVCdvH0vjZqASD1kBVXuoi50A/ls748bO4dADPXVmahsF+AeJzV6cnah9/6thSLa04v+z0fJ4kD/1g12uP1
+    - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA4VwLVmY3XeMpmK0RvzxZ8gMYQmsxT0qZ+9rFv+41YT8hV/P3YixDAiNJf7/RThGY3d8mGFqFXueAHQU5nTnNPZu3j2/FsL+qk3hPwGkaQcG3+nV2aDh3MfduTdYOobu6mWquwcxlY/uinEd8uXwPOqWOlmU+y+tXvzUf0vPLuT2ks+5eety0+oOqty4/gAanIPYHC9u3PQaK1CkNdot2AEJBh17j4kU/qDMj+wOMDMrInUSFUCQE/0JT76490uB70zmAJc2tewKoKIHwsAzwRJiHraM9XNMNDqugRIIWzJa/nBvs9od0mwyKGQ6u/3hs7ntn5oufngk0skT9M1nECQ==
+
+write_files:
+- path: /etc/ntp.conf
+  content: |
+    server ripe.cnaf.infn.it
+    server ntp-1.infn.it
+    # by default act only as a basic NTP client
+    restrict -4 default nomodify nopeer noquery notrap
+    restrict -6 default nomodify nopeer noquery notrap
+    #
+    # # Local users may interrogate the ntp server more closely.
+    restrict 127.0.0.1
+    restrict [::1]
+
+- path: /etc/sysctl.d/disable_hardlink_protection.conf
+  permissions: 0644
+  content: |
+    fs.protected_hardlinks=0
+
+- path: /home/core/.dockercfg
+  owner: core:core
+  permissions: 0644
+  content: |
+        {
+          "http://cloud-vm128.cloud.cnaf.infn.it": {
+            "auth": "",
+            "email": " "
+          }
+        }
+
+- path: /etc/systemd/system/docker.service.d/50-insecure-registry.conf
+  content: |
+    [Service]
+    Environment=DOCKER_OPTS=--storage-driver=btrfs --insecure-registry="0.0.0.0/0"
+
+- path: /etc/ssl/certs/igi-test-ca.pem
+  permissions: 0644
+  content: |
+    -----BEGIN CERTIFICATE-----
+    MIIDgDCCAmigAwIBAgIJAMzDwAv7o5VUMA0GCSqGSIb3DQEBBQUAMC0xCzAJBgNV
+    BAYTAklUMQwwCgYDVQQKDANJR0kxEDAOBgNVBAMMB1Rlc3QgQ0EwHhcNMTIwOTI2
+    MTUwMDU0WhcNMjIwOTI0MTUwMDU0WjAtMQswCQYDVQQGEwJJVDEMMAoGA1UECgwD
+    SUdJMRAwDgYDVQQDDAdUZXN0IENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+    CgKCAQEA9u4Fgtj7YpMRql3NAasEUmP6Byv/CH+dPZNzSxfNCMOPqARLBWS/2Ora
+    m5cRpoBByT0LpjDCFBJhLrBKvCvmWOTfS1jYsQwSpC/5scButthlcNOhLKQSZblS
+    8Pa7HoFS4zQFwCwWOYbOLF+FblYRgSY30WMi361giydeV8iei8KNH2FIoDyo9kjV
+    gYQKp76LFv7urGhc5sHA+HWq7+AfyivtZC+a55Rw6EHXOQ+vih5TPXa1t5RL7IkY
+    4U7Ld5ExptBIDx0UkSihYexAY4RGXVUaq535dGtJQ8/NYMrJ5NMGt2X0bRszArnE
+    EKc/qdAcgcalgoiaZtVkq45eXADXzwIDAQABo4GiMIGfMB0GA1UdDgQWBBSRdzZ7
+    LrRp8yfqt/YIi0ojohFJxjBdBgNVHSMEVjBUgBSRdzZ7LrRp8yfqt/YIi0ojohFJ
+    xqExpC8wLTELMAkGA1UEBhMCSVQxDDAKBgNVBAoMA0lHSTEQMA4GA1UEAwwHVGVz
+    dCBDQYIJAMzDwAv7o5VUMA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQDAgEG
+    MA0GCSqGSIb3DQEBBQUAA4IBAQB379cvZmfCLvGdoGbW+6ppDNy3pT9hqYmZAlfV
+    FGZSEaTKjGCbPuErUNC6+7zhij5CmMtMRhccI3JswjPHPQGm12jiEC492J6Avj/x
+    PL8vcBRofe4whXefDVgUw8G1nkQYr2BF0jzeiN72ToISGMbt/q94QV70lYCo/Tog
+    UQQ6F+XhztffxQyRgsUXhR4qq1D4h7UifqfQGBzknS23RMLQUdKXG4MhTLMVmxJC
+    uY9Oi0It3hk9Qtn0nlZ7rvo5weJGxuRBbZ85Nvw2tIhH7G2osc6zqmHTmUAR4FXb
+    l8/ElwGVrURMMuJLDbISVXjBNFuVOS2BdlyEe4x5kfQAWITZ
+    -----END CERTIFICATE-----
+
+coreos:
+  update:
+    reboot-strategy: off
+  etcd:
+    addr: $private_ipv4:4001
+    peer-addr: $private_ipv4:7001
+  fleet:
+    public-ip: $public_ipv4
+  units:
+  - name: update-sysctl.service
+    command: start
+    content: |
+      [Unit]
+      Description=Update sysctl values written by cloud-config
+      [Service]
+      ExecStart=/usr/lib/systemd/systemd-sysctl
+  - name: etcd.service
+    command: start
+  - name: fleet.service
+    command: start
+  - name: format-ephemeral.service
+    command: start
+    content: |
+      [Unit]
+      Description=Formats the ephemeral drive
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      ExecStart=/usr/sbin/wipefs -f /dev/vdb
+      ExecStart=/usr/sbin/mkfs.btrfs -f /dev/vdb
+  - name: create-eph0.service
+    command: start
+    content: |
+      [Unit]
+      Description=Create /media/eph0
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      ExecStart=/usr/bin/mkdir -p /media/eph0
+  - name: var-lib-docker.mount
+    command: start
+    content: |
+      [Unit]
+      Description=Mount ephemeral to /var/lib/docker
+      Requires=format-ephemeral.service
+      After=format-ephemeral.service
+      Before=docker.service
+
+      [Mount]
+      What=/dev/vdb
+      Where=/var/lib/docker
+      Type=btrfs
+  - name: set-permissions-eph0.service
+    command: start
+    content: |
+      [Unit]
+      Description=Change permissions on /media/eph0
+      Requires=create-eph0.service
+      After=media.eph0.mount
+      Before=docker.service
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      ExecStart=/usr/bin/chown docker:docker /media/eph0
+      ExecStart=/usr/bin/chmod 775 /media/eph0
+  - name: update-ca-certificates.service
+    command: start
+    content: |
+      [Unit]
+      Description=Updates ca certificates
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/sbin/update-ca-certificates
+
+  - name: jenkins-slave.service
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      Description=Jenkins slave docker container
+      After=docker.service
+      Requires=docker.service
+
+      [Service]
+      ExecStartPre=-/usr/bin/docker kill jenkins-slave
+      ExecStartPre=-/usr/bin/docker rm jenkins-slave
+      ExecStartPre=/usr/bin/docker pull cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave
+      ExecStart=/usr/bin/docker run --name jenkins-slave -p 2222:22 -v /var/run/docker.sock:/var/run/docker.sock -v /media/eph0:/storage:rw -v /home/core/.dockercfg:/home/jenkins/.dockercfg cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave
+      ExecStop=/usr/bin/docker stop jenkins-slave
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
