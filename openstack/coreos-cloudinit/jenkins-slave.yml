@@ -1,7 +1,5 @@
 #cloud-config
-
 ---
-
 users:
 - name: core
   passwd: $6$rounds=4096$kE9bqO7G2bHIG$jd5FbUFNeh8zO3SMUifX6ypkDVIvNHbk9klkJhqk2ROOu/kOzU3QRQwEwyY0OUSVNiP0pLhdOI.3ccZ6WbUSa1
@@ -38,11 +36,6 @@ write_files:
           }
         }
 
-- path: /etc/systemd/system/docker.service.d/50-insecure-registry.conf
-  content: |
-    [Service]
-    Environment=DOCKER_OPTS=--storage-driver=btrfs --insecure-registry="0.0.0.0/0"
-
 - path: /etc/ssl/certs/igi-test-ca.pem
   permissions: 0644
   content: |
@@ -71,70 +64,39 @@ write_files:
 coreos:
   update:
     reboot-strategy: off
-  etcd:
-    addr: $private_ipv4:4001
-    peer-addr: $private_ipv4:7001
+  etcd2:
+    discovery: https://discovery.etcd.io/891a1a81273930b845d2c6f1196ec89://discovery.etcd.io/891a1a81273930b845d2c6f1196ec896
+    advertise-client-urls: http://$private_ipv4:2379,http://$private_ipv4:4001
+    initial-advertise-peer-urls: http://$private_ipv4:2380
   fleet:
     public-ip: $public_ipv4
   units:
-  - name: update-sysctl.service
+  - name: format-var-lib-docker.service
     command: start
     content: |
       [Unit]
-      Description=Update sysctl values written by cloud-config
-      [Service]
-      ExecStart=/usr/lib/systemd/systemd-sysctl
-  - name: etcd.service
-    command: start
-  - name: fleet.service
-    command: start
-  - name: format-ephemeral.service
-    command: start
-    content: |
-      [Unit]
-      Description=Formats the ephemeral drive
+      Before=docker.service var-lib-docker.mount
+      ConditionPathExists=!/var/lib/docker.btrfs
       [Service]
       Type=oneshot
-      RemainAfterExit=yes
-      ExecStart=/usr/sbin/wipefs -f /dev/vdb
-      ExecStart=/usr/sbin/mkfs.btrfs -f /dev/vdb
-  - name: create-eph0.service
-    command: start
-    content: |
-      [Unit]
-      Description=Create /media/eph0
+      ExecStart=/usr/bin/truncate --size=20G /var/lib/docker.btrfs
+      ExecStart=/usr/sbin/mkfs.btrfs /var/lib/docker.btrfs
 
-      [Service]
-      Type=oneshot
-      RemainAfterExit=yes
-      ExecStart=/usr/bin/mkdir -p /media/eph0
   - name: var-lib-docker.mount
-    command: start
+    enable: true
     content: |
       [Unit]
-      Description=Mount ephemeral to /var/lib/docker
-      Requires=format-ephemeral.service
-      After=format-ephemeral.service
       Before=docker.service
-
+      After=format-var-lib-docker.service
+      Requires=format-var-lib-docker.service
+      [Install]
+      RequiredBy=docker.service
       [Mount]
-      What=/dev/vdb
+      What=/var/lib/docker.btrfs
       Where=/var/lib/docker
       Type=btrfs
-  - name: set-permissions-eph0.service
-    command: start
-    content: |
-      [Unit]
-      Description=Change permissions on /media/eph0
-      Requires=create-eph0.service
-      After=media.eph0.mount
-      Before=docker.service
+      Options=loop,discard
 
-      [Service]
-      Type=oneshot
-      RemainAfterExit=yes
-      ExecStart=/usr/bin/chown docker:docker /media/eph0
-      ExecStart=/usr/bin/chmod 775 /media/eph0
   - name: update-ca-certificates.service
     command: start
     content: |
@@ -144,6 +106,19 @@ coreos:
       [Service]
       Type=oneshot
       ExecStart=/usr/sbin/update-ca-certificates
+
+  - name: update-sysctl.service
+    command: start
+    content: |
+      [Unit]
+      Description=Update sysctl values written by cloud-config
+      [Service]
+      ExecStart=/usr/lib/systemd/systemd-sysctl
+
+  - name: etcd2.service
+    command: start
+  - name: fleet.service
+    command: start
 
   - name: jenkins-slave.service
     command: start
