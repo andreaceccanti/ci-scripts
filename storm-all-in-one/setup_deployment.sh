@@ -26,8 +26,8 @@ cat << EOF > deploy_storm.sh
 dir=$(mktemp -d storm-deployment.XXXX)
 cd $dir
 git clone $STORM_DEPLOYMENT_TEST_REPO
-git checkout $STORM_DEPLOYMENT_TEST_BRANCH
 cd storm-deployment-test
+git checkout $STORM_DEPLOYMENT_TEST_BRANCH
 export STORM_REPO=${STORM_REPO}
 export PATH=$PATH:/sbin:/usr/sbin
 chmod +x ./$MODE-deployment_$PLATFORM.sh
