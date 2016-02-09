@@ -97,6 +97,43 @@ coreos:
       Type=btrfs
       Options=loop,discard
 
+  - name: format-storage-dir.service
+    command: start
+    content: |
+      [Unit]
+      Before=jenkins-slave.service
+      ConditionPathExists=!/media/eph0/storage.btrfs
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/mkdir -p /local-storage
+      ExecStart=/bin/mkdir -p /storage
+      ExecStart=/usr/bin/truncate --size=10G /local-storage/storage.btrfs
+      ExecStart=/usr/sbin/mkfs.btrfs /local-storage/storage.btrfs
+
+  - name: storage.mount
+    enable: true
+    content: |
+      [Unit]
+      Before=jenkins-slave.service
+      After=format-storage-dir.service
+      Requires=format-storage-dir.service
+      [Mount]
+      What=/local-storage/storage.btrfs
+      Where=/storage
+      Type=btrfs
+      Options=loop,discard
+
+  - name: grant-jenkins-access-to-storage.service
+    command: start
+    content: |
+      [Unit]
+      Before=jenkins-slave.service
+      After=storage.mount
+      Requires=storage.mount
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/chown -R 1000:1000 /storage
+
   - name: update-ca-certificates.service
     command: start
     content: |
@@ -127,13 +164,13 @@ coreos:
       [Unit]
       Description=Jenkins slave docker container
       After=docker.service
-      Requires=docker.service
+      Requires=storage.mount docker.service
 
       [Service]
       ExecStartPre=-/usr/bin/docker kill jenkins-slave
       ExecStartPre=-/usr/bin/docker rm jenkins-slave
       ExecStartPre=/usr/bin/docker pull cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave
-      ExecStart=/usr/bin/docker run --name jenkins-slave -p 2222:22 -v /var/run/docker.sock:/var/run/docker.sock -v /media/eph0:/storage:rw -v /home/core/.dockercfg:/home/jenkins/.dockercfg cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave
+      ExecStart=/usr/bin/docker run --name jenkins-slave -p 2222:22 -v /var/run/docker.sock:/var/run/docker.sock -v /storage:/storage:rw -v /home/core/.dockercfg:/home/jenkins/.dockercfg cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave
       ExecStop=/usr/bin/docker stop jenkins-slave
       Restart=always
 
