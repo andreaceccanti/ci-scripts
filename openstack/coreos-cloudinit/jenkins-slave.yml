@@ -157,6 +157,20 @@ coreos:
   - name: fleet.service
     command: start
 
+  - name: jenkins-slave-data.service
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      After=docker.service
+
+      [Service]
+      Type=oneshot
+      ExecStartPre=-/usr/bin/docker kill jenkins-slave-data
+      ExecStartPre=-/usr/bin/docker rm jenkins-slave-data
+      ExecStartPre=/usr/bin/docker pull cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave-data
+      ExecStart=/usr/bin/docker create --name jenkins-slave-data cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave-data /bin/true
+
   - name: jenkins-slave.service
     command: start
     enable: true
@@ -164,13 +178,13 @@ coreos:
       [Unit]
       Description=Jenkins slave docker container
       After=docker.service
-      Requires=storage.mount docker.service
+      Requires=storage.mount jenkins-slave-data.service
 
       [Service]
       ExecStartPre=-/usr/bin/docker kill jenkins-slave
       ExecStartPre=-/usr/bin/docker rm jenkins-slave
       ExecStartPre=/usr/bin/docker pull cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave
-      ExecStart=/usr/bin/docker run --name jenkins-slave -p 2222:22 -v /var/run/docker.sock:/var/run/docker.sock -v /storage:/storage:rw -v /home/core/.dockercfg:/home/jenkins/.dockercfg cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave
+      ExecStart=/usr/bin/docker run --name jenkins-slave -p 2222:22 -v /var/run/docker.sock:/var/run/docker.sock --volumes-from jenkins-slave-data -v /storage:/storage:rw -v /home/core/.dockercfg:/home/jenkins/.dockercfg cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave
       ExecStop=/usr/bin/docker stop jenkins-slave
       Restart=always
 

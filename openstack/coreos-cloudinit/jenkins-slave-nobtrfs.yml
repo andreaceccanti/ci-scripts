@@ -131,10 +131,10 @@ coreos:
     enable: true
     content: |
       [Unit]
-      Type=oneshot
       After=docker.service
 
       [Service]
+      Type=oneshot
       ExecStartPre=-/usr/bin/docker kill jenkins-slave-data
       ExecStartPre=-/usr/bin/docker rm jenkins-slave-data
       ExecStartPre=/usr/bin/docker pull cloud-vm128.cloud.cnaf.infn.it/italiangrid/jenkins-slave-data
@@ -147,7 +147,7 @@ coreos:
       [Unit]
       Description=Jenkins slave docker container
       After=docker.service
-      Requires=storage.mount docker.service
+      Requires=storage.mount jenkins-slave-data.service
 
       [Service]
       ExecStartPre=-/usr/bin/docker kill jenkins-slave
