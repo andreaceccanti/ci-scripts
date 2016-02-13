@@ -79,7 +79,7 @@ coreos:
       ConditionPathExists=!/var/lib/docker.btrfs
       [Service]
       Type=oneshot
-      ExecStart=/usr/bin/truncate --size=20G /var/lib/docker.btrfs
+      ExecStart=/usr/bin/truncate --size=30G /var/lib/docker.btrfs
       ExecStart=/usr/sbin/mkfs.btrfs /var/lib/docker.btrfs
 
   - name: var-lib-docker.mount
@@ -107,7 +107,7 @@ coreos:
       Type=oneshot
       ExecStart=/bin/mkdir -p /local-storage
       ExecStart=/bin/mkdir -p /storage
-      ExecStart=/usr/bin/truncate --size=10G /local-storage/storage.btrfs
+      ExecStart=/usr/bin/truncate --size=5G /local-storage/storage.btrfs
       ExecStart=/usr/sbin/mkfs.btrfs /local-storage/storage.btrfs
 
   - name: storage.mount
