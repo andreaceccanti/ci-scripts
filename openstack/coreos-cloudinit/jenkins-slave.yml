@@ -132,7 +132,7 @@ coreos:
       Requires=storage.mount
       [Service]
       Type=oneshot
-      ExecStart=/usr/bin/chown -R 1000:1000 /storage
+      ExecStart=/usr/bin/chown -R 1234:1234 /storage
 
   - name: update-ca-certificates.service
     command: start
