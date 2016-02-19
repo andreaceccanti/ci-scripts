@@ -21,6 +21,8 @@ USER_DATA_FILE_PATH=${USER_DATA_FILE_PATH:-openstack/coreos-cloudinit/jenkins-sl
 DOCKER_REGISTRY_URL=${DOCKER_REGISTRY_URL:-http://cloud-vm128.cloud.cnaf.infn.it}
 DOCKER_REGISTRY_AUTH_TOKEN=${DOCKER_REGISTRY_AUTH_TOKEN}
 
+VOLUME_NAME=${VOLUME_NAME:-${MACHINE_NAME}-volume}
+
 ## nova client environment
 export OS_USERNAME=${OS_USERNAME}
 export OS_PASSWORD=${OS_PASSWORD}
@@ -54,9 +56,30 @@ if [[ "${del_output}" != ${NO_SERVER_MSG}* ]]; then
   fi
 fi
 
+# Support for mounting cinder volumes
+mount_volume_opts=""
+
+if [[ -n ${MOUNT_VOLUME} ]]; then
+  cinder_show_output=$(cinder show ${VOLUME_NAME})
+
+  if [[ ${cinder_show_output} = "ERROR: No volume with a name or ID of"* ]]; then
+    cinder create --display-name ${VOLUME_NAME} ${VOLUME_SIZE}
+    if [ $? -ne 0 ]; then
+      echo "Error creating cinder volume"
+      exit 1
+    fi
+  fi
+
+  volume_id=$(cinder show ${VOLUME_NAME} | awk '/ id/ {print $4}')
+
+  mount_volume_opts="--block-device source=volume,id=${volume_id},dest=volume,shutdown=preserve"
+fi
+
 # start the vm and wait until it gets up
 nova boot --image ${MACHINE_IMAGE} --flavor ${MACHINE_FLAVOR} --user-data ${USER_DATA_FILE_PATH} \
-  --key-name ${MACHINE_KEY_NAME} --security-groups ${MACHINE_SECGROUPS} ${MACHINE_NAME}
+  --key-name ${MACHINE_KEY_NAME} --security-groups ${MACHINE_SECGROUPS} \
+  ${mount_volume_opts} ${MACHINE_NAME}
+
 boot_status=$?
 
 if [ ${boot_status} -ne 0 ]; then
