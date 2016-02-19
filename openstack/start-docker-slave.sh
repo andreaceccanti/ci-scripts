@@ -60,6 +60,12 @@ fi
 mount_volume_opts=""
 
 if [[ -n ${MOUNT_VOLUME} ]]; then
+  cinder list
+  if [ $? -ne 0 ]; then
+    echo "Error list cinder volumes"
+    exit 1
+  fi
+
   cinder_show_output=$(cinder show ${VOLUME_NAME})
 
   if [[ ${cinder_show_output} = "ERROR: No volume with a name or ID of"* ]]; then
