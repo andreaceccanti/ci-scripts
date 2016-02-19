@@ -60,7 +60,7 @@ fi
 mount_volume_opts=""
 
 if [[ -n ${MOUNT_VOLUME} ]]; then
-  cinder list
+  cinder --debug list
   if [ $? -ne 0 ]; then
     echo "Error list cinder volumes"
     exit 1
