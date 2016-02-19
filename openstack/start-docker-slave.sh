@@ -60,25 +60,7 @@ fi
 mount_volume_opts=""
 
 if [[ -n ${MOUNT_VOLUME} ]]; then
-  cinder --debug list
-  if [ $? -ne 0 ]; then
-    echo "Error list cinder volumes"
-    exit 1
-  fi
-
-  cinder_show_output=$(cinder show ${VOLUME_NAME})
-
-  if [[ ${cinder_show_output} = "ERROR: No volume with a name or ID of"* ]]; then
-    cinder create --display-name ${VOLUME_NAME} ${VOLUME_SIZE}
-    if [ $? -ne 0 ]; then
-      echo "Error creating cinder volume"
-      exit 1
-    fi
-  fi
-
-  volume_id=$(cinder show ${VOLUME_NAME} | awk '/ id/ {print $4}')
-
-  mount_volume_opts="--block-device source=volume,id=${volume_id},dest=volume,shutdown=preserve"
+  mount_volume_opts="--block-device source=volume,id=${VOLUME_ID},dest=volume,shutdown=preserve"
 fi
 
 # start the vm and wait until it gets up
