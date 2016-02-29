@@ -27,6 +27,7 @@ STORM_REPO="${STORM_REPO:-http://radiohead.cnaf.infn.it:9999/view/REPOS/job/repo
 DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST:-""}
 STORAGE_PREFIX=${STORAGE_PREFIX:-/storage}
 TESTSUITE_BRANCH="${TESTSUITE_BRANCH:-develop}"
+FS_TYPE="${FS_TYPE:-btrfs}"
 
 if [ -n "${TESTSUITE_EXCLUDE}" ]; then
   EXCLUDE_CLAUSE="-e TESTSUITE_EXCLUDE=${TESTSUITE_EXCLUDE}"
@@ -66,7 +67,8 @@ deployment_name=`docker inspect -f "{{ .Name }}" $deploy_id|cut -c2-`
 testsuite_name="ts-linked-to-$deployment_name"
 
 # run StoRM testsuite when deployment is over
-docker run -e "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}" $EXCLUDE_CLAUSE --link $deployment_name:docker-storm.cnaf.infn.it \
+docker run -e "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}" -e "FS_TYPE=${FS_TYPE}" \
+  $EXCLUDE_CLAUSE --link $deployment_name:docker-storm.cnaf.infn.it \
   -v /etc/localtime:/etc/localtime:ro \
   --name $testsuite_name \
   ${REGISTRY_PREFIX}italiangrid/storm-testsuite
