@@ -54,15 +54,8 @@ docker pull $deployment_image
 testsuite_image=${REGISTRY_PREFIX}italiangrid/storm-testsuite
 docker pull $testsuite_image
 
-if [ "$PLATFORM" == "centos5" ]
-then
-  SL_PLATFORM=SL5
-else
-  SL_PLATFORM=SL6
-fi
-
 # run StoRM deployment and get container id
-deploy_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" -e "MODE=${MODE}" -e "PLATFORM=${SL_PLATFORM}" \
+deploy_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   -h docker-storm.cnaf.infn.it \
   -v $storage_dir:/storage:rw \
   -v $gridmap_dir:/etc/grid-security/gridmapdir:rw \
@@ -80,5 +73,3 @@ docker run -e "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}" \
   -v /etc/localtime:/etc/localtime:ro \
   --name $testsuite_name \
   $testsuite_image
-
-
