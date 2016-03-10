@@ -22,7 +22,7 @@ function cleanup(){
 trap cleanup EXIT
 
 MODE="${MODE:-clean}"
-PLATFORM="${PLATFORM:-SL6}"
+PLATFORM="${PLATFORM:-centos6}"
 STORM_REPO="${STORM_REPO:-http://radiohead.cnaf.infn.it:9999/view/REPOS/job/repo_storm_develop_SL6/lastSuccessfulBuild/artifact/storm_develop_sl6.repo}"
 DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST:-""}
 STORAGE_PREFIX=${STORAGE_PREFIX:-/storage}
@@ -49,16 +49,25 @@ mkdir -p $storage_dir
 mkdir -p $gridmap_dir
 
 # Grab latest images
-docker pull ${REGISTRY_PREFIX}italiangrid/storm-deployment-test
-docker pull ${REGISTRY_PREFIX}italiangrid/storm-testsuite
+deployment_image=${REGISTRY_PREFIX}italiangrid/storm-deployment-test:${PLATFORM}
+docker pull $deployment_image
+testsuite_image=${REGISTRY_PREFIX}italiangrid/storm-testsuite
+docker pull $testsuite_image
+
+if [ "$PLATFORM" == "centos5" ]
+then
+  SL_PLATFORM=SL5
+else
+  SL_PLATFORM=SL6
+fi
 
 # run StoRM deployment and get container id
-deploy_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
+deploy_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" -e "MODE=${MODE}" -e "PLATFORM=${SL_PLATFORM}" \
   -h docker-storm.cnaf.infn.it \
   -v $storage_dir:/storage:rw \
   -v $gridmap_dir:/etc/grid-security/gridmapdir:rw \
   -v /etc/localtime:/etc/localtime:ro \
-  ${REGISTRY_PREFIX}italiangrid/storm-deployment-test \
+  $deployment_image \
   /bin/sh deploy.sh`
 
 # get names for deployment and testsuite containers
@@ -70,6 +79,6 @@ docker run -e "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}" \
   $EXCLUDE_CLAUSE --link $deployment_name:docker-storm.cnaf.infn.it \
   -v /etc/localtime:/etc/localtime:ro \
   --name $testsuite_name \
-  ${REGISTRY_PREFIX}italiangrid/storm-testsuite
+  $testsuite_image
 
 
