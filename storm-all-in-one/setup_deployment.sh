@@ -8,7 +8,7 @@ terminate() {
 }
 
 [ -n "${JENKINS_SLAVE_PRIVATE_KEY}" ] || terminate "JENKINS_SLAVE_PRIVATE_KEY not set."
-[ -n "${REPO_URL}" ] || terminate "REPO_URL not set."
+[ -n "${REPO_URL}" ] || [ -n "${STORM_REPO}" ] || terminate "REPO_URL or STORM_REPO not set."
 [ -n "${PLATFORM}" ] || terminate "PLATFORM not set."
 [ -n "${MODE}" ] || terminate "MODE not set."
 [ -n "${MACHINE_HOSTNAME}" ] || terminate "MACHINE_HOSTNAME not set."
@@ -17,7 +17,7 @@ terminate() {
 STORM_DEPLOYMENT_TEST_REPO=${STORM_DEPLOYMENT_TEST_REPO:-https://github.com/italiangrid/storm-deployment-test.git}
 STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH:-master}
 SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=false -i $JENKINS_SLAVE_PRIVATE_KEY"
-STORM_REPO="${REPO_URL}_$(echo $PLATFORM | tr '[:upper:]' '[:lower:]').repo"
+STORM_REPO=${STORM_REPO:-"${REPO_URL}_$(echo $PLATFORM | tr '[:upper:]' '[:lower:]').repo"}
 STORM_DB_PASSWORD=${STORM_DB_PASSWORD:-}
 
 chmod 400 ${JENKINS_SLAVE_PRIVATE_KEY}
