@@ -23,6 +23,7 @@ STORM_DB_PASSWORD=${STORM_DB_PASSWORD:-}
 chmod 400 ${JENKINS_SLAVE_PRIVATE_KEY}
 
 cat << EOF > deploy_storm.sh
+hostname $MACHINE_HOSTNAME
 dir=$(mktemp -d storm-deployment.XXXX)
 cd $dir
 git clone $STORM_DEPLOYMENT_TEST_REPO
