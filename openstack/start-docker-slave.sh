@@ -64,7 +64,7 @@ if [[ -n ${MOUNT_VOLUME} ]]; then
 fi
 
 # start the vm and wait until it gets up
-nova boot --image ${MACHINE_IMAGE} --flavor ${MACHINE_FLAVOR} --user-data ${USER_DATA_FILE_PATH} \
+nova boot --config-drive true --image ${MACHINE_IMAGE} --flavor ${MACHINE_FLAVOR} --user-data ${USER_DATA_FILE_PATH} \
   --key-name ${MACHINE_KEY_NAME} --security-groups ${MACHINE_SECGROUPS} \
   ${mount_volume_opts} ${MACHINE_NAME}
 
