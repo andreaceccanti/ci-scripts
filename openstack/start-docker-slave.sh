@@ -9,19 +9,25 @@ terminate() {
 }
 
 ## Image, IP, flavour, etc... for VM that will be started
-MACHINE_IMAGE=${MACHINE_IMAGE:-CoreOS_Beta}
-MACHINE_NAME=${MACHINE_NAME:-cloud-vm178}
+MACHINE_IMAGE=${MACHINE_IMAGE:-CoreOS_1010.5.0}
+MACHINE_NAME=${MACHINE_NAME:-unset}
 MACHINE_HOSTNAME=${MACHINE_NAME}.cloud.cnaf.infn.it
 MACHINE_IP=${MACHINE_IP}
 MACHINE_KEY_NAME=${MACHINE_KEY_NAME:-jenkins}
 MACHINE_FLAVOR=${MACHINE_FLAVOR:-cnaf.medium.plus}
 MACHINE_SECGROUPS=${MACHINE_SECGROUPS:-jenkins-slave}
+EC2_USER=${EC2_USER:-core}
 
+## Cinder volume stuff
+VOLUME_NAME=${VOLUME_NAME:-${MACHINE_NAME}-volume}
+VOLUME_SIZE=${VOLUME_SIZE:-120}
+
+## CoreOS cloudinit 
 USER_DATA_FILE_PATH=${USER_DATA_FILE_PATH:-openstack/coreos-cloudinit/jenkins-slave-nobtrfs.yml}
+
+## Docker registry stuff
 DOCKER_REGISTRY_URL=${DOCKER_REGISTRY_URL:-http://cloud-vm128.cloud.cnaf.infn.it}
 DOCKER_REGISTRY_AUTH_TOKEN=${DOCKER_REGISTRY_AUTH_TOKEN}
-
-VOLUME_NAME=${VOLUME_NAME:-${MACHINE_NAME}-volume}
 
 ## nova client environment
 export OS_USERNAME=${OS_USERNAME}
@@ -33,15 +39,22 @@ export OS_AUTH_URL=${OS_AUTH_URL}
 ## Other script settings
 NO_SERVER_MSG="No server with a name or ID of"
 DEL_SLEEP_PERIOD=30
-EC2_USER=${EC2_USER:-core}
 SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=false -i $JENKINS_SLAVE_PRIVATE_KEY"
 RETRY_COUNT=60
 
 # Change permissions on private key
 chmod 400 $JENKINS_SLAVE_PRIVATE_KEY
 
+# Get new cluster id from coreos
+cluster_id=$(curl -w "\n" 'https://discovery.etcd.io/new?size=1')
+
 # Substitute the real token for docker registry authentication
-sed -i 's@auth": ""@auth": "'${DOCKER_REGISTRY_AUTH_TOKEN}'"@g' ${USER_DATA_FILE_PATH}
+sed 's@auth": ""@auth": "'${DOCKER_REGISTRY_AUTH_TOKEN}'"@g' ${USER_DATA_FILE_PATH} > /tmp/userdata
+
+# Substitute cluster id 
+sed -i -e 's#@@DISCOVERY_URL@@#'"${cluster_id}"'#' /tmp/userdata
+
+USER_DATA_FILE_PATH=/tmp/userdata
 
 # delete running machine
 del_output=$(nova delete $MACHINE_NAME)
@@ -60,7 +73,13 @@ fi
 mount_volume_opts=""
 
 if [[ -n ${MOUNT_VOLUME} ]]; then
-  mount_volume_opts="--block-device source=volume,id=${VOLUME_ID},dest=volume,shutdown=preserve"
+  # Delete volume if exists
+  cinder delete ${VOLUME_NAME} || echo "Cinder volume ${VOLUME_NAME} does not exist (or there was an error)"
+
+  # Create a brand new one
+  cinder create --display-name ${VOLUME_NAME} ${VOLUME_SIZE}
+  volume_id=$(cinder show ${VOLUME_NAME} | grep -E '\<id\>' | awk '{print $4}')
+  mount_volume_opts="--block-device source=volume,id=${volume_id},dest=volume,shutdown=preserve"
 fi
 
 # start the vm and wait until it gets up
