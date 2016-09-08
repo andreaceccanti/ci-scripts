@@ -40,6 +40,7 @@ fi
 # Start myproxy server
 if [ -z "${SKIP_MYPROXY}" ]; then
   remove_container myproxy-server
+  docker pull ${REGISTRY_PREFIX}italiangrid/myproxy-server
   docker run -d \
     -h myproxy-server \
     --name myproxy-server \
@@ -49,6 +50,7 @@ fi
 # run VOMS deployment
 if [ -z "${SKIP_SERVER}" ]; then
   remove_container voms-server
+  docker pull ${REGISTRY_PREFIX}italiangrid/voms-deployment-test
   docker run -d \
     -e "VOMS_REPO=${VOMS_REPO}" \
     -e "MODE=${MODE}" \
@@ -62,6 +64,7 @@ fi
 remove_container voms-ts
 
 # run VOMS testsuite when deployment is over
+docker pull ${REGISTRY_PREFIX}italiangrid/voms-ts
 docker run \
   -e "VOMS_REPO=${VOMS_REPO}" \
   -e "VO1=${VO1}" \
