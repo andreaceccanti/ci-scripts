@@ -79,6 +79,7 @@ docker run \
   -e "MYPROXY_PASSWORD=${MYPROXY_PASSWORD}" \
   -e "INCLUDE_TESTS=${INCLUDE_TESTS}" \
   -e "EXCLUDE_TESTS=${EXCLUDE_TESTS}" \
+  -e "UPDATE_VOMS_CLIENTS=y" \
   -h voms-ts \
   --name voms-ts \
   --volumes-from voms-server \
