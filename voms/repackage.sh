@@ -35,4 +35,9 @@ scp ${SSH_OPTIONS} ${MOCK_USER}@${MOCK_HOSTNAME}:/var/lib/mock/${MOCK_CONFIG}/re
 retval=$?
 [[ ${retval} -ne 0 ]] && terminate "Error copying back generated artifacts"
 
-echo "Repackage terminated succesfully"
+ssh ${SSH_OPTIONS} ${MOCK_USER}@${MOCK_HOSTNAME} "rm -rf ${VOMS_REPACKAGE_DIR}"
+
+retval=$?
+[[ ${retval} -ne 0 ]] && terminate "Error cleaning up repackage dir"
+
+echo "Done."
