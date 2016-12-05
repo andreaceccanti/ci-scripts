@@ -110,6 +110,8 @@ PUPPET_CONF=${puppet_conf:-default}
 PUPPET_CLOUD_VM_REPO_URL="https://${BB_USERNAME}:${BB_PASSWORD}@${BB_REPO}"
 
 cat << EOF > provision.sh
+version=$(lsb_release -rs | cut -f1 -d.)
+rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-el-$version.noarch.rpm
 yum install -y puppet git
 mkdir -p /etc/puppet/modules
 git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
