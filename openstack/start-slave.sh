@@ -111,8 +111,9 @@ PUPPET_CLOUD_VM_REPO_URL="${BB_REPO}"
 CONFIG_SCRIPT_URL="https://raw.githubusercontent.com/cnaf/config-scripts/master/configure-jenkins-slave.sh"
 
 cat << EOF > provision.sh
+set -x
 mkdir -p /etc/puppet/modules
-chmod 0400 /tmp/jenkins-slave-private-key.pem
+chown root:root /tmp/jenkins-slave-private-key.pem && chmod 0400 /tmp/jenkins-slave-private-key.pem
 echo "ssh -i /tmp/jenkins-slave-private-key.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \$*" > git_ssh
 chmod +x ./git_ssh
 GIT_SSH=./git_ssh git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
