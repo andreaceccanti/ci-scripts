@@ -114,7 +114,8 @@ version=\$(lsb_release -rs | cut -f1 -d.)
 sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-el-\$version.noarch.rpm
 yum install -y puppet git
 mkdir -p /etc/puppet/modules
-echo "ssh -i ~/jenkins-slave-private-key.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \$*" > git_ssh
+chmod 0400 /tmp/jenkins-slave-private-key.pem
+echo "ssh -i /tmp/jenkins-slave-private-key.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \$*" > git_ssh
 chmod +x ./git_ssh
 GIT_SSH=./git_ssh git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
 wget --no-check-certificate https://raw.githubusercontent.com/cnaf/config-scripts/master/configure-deployment-node.sh -O /root/configure-deployment-node.sh
@@ -123,6 +124,9 @@ EOF
 
 scp ${SSH_OPTIONS} provision.sh ${JENKINS_SLAVE_PRIVATE_KEY} ${EC2_USER}@${MACHINE_HOSTNAME}:
 [ $? -ne 0 ] && terminate "Error sending provision.sh and Jenkins ssh key to ${MACHINE_HOSTNAME}"
+
+scp ${SSH_OPTIONS} ${JENKINS_SLAVE_PRIVATE_KEY} ${EC2_USER}@${MACHINE_HOSTNAME}:/tmp
+[ $? -ne 0 ] && terminate "Error sending Jenkins ssh key to ${MACHINE_HOSTNAME}"
 
 ssh -tt ${SSH_OPTIONS} ${EC2_USER}@${MACHINE_HOSTNAME} "sudo sh provision.sh"
 [ $? -ne 0 ] && terminate "Error during provisioning."
