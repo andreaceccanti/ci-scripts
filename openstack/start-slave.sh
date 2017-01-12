@@ -107,12 +107,12 @@ echo "Instance started succesfully. Running the provisioning"
 
 # Provision private key to fetch cloud-vm puppet module
 PUPPET_CONF=${puppet_conf:-default}
-PUPPET_CLOUD_VM_REPO_URL="https://${BB_USERNAME}:${BB_PASSWORD}@${BB_REPO}"
+PUPPET_CLOUD_VM_REPO_URL="${BB_REPO}"
 CONFIG_SCRIPT_URL="https://raw.githubusercontent.com/cnaf/config-scripts/master/configure-jenkins-slave.sh"
 
 cat << EOF > provision.sh
 mkdir -p /etc/puppet/modules
-git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
+GIT_SSH_COMMAND="ssh -i ${JENKINS_SLAVE_PRIVATE_KEY}" git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
 wget --no-check-certificate ${CONFIG_SCRIPT_URL} -O /root/configure-slave.sh
 MVN_REPO_CNAF_USER=${MVN_REPO_CNAF_USER} MVN_REPO_CNAF_PASSWORD=${MVN_REPO_CNAF_PASSWORD} sh /root/configure-slave.sh
 EOF

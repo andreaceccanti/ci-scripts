@@ -107,14 +107,14 @@ echo "Instance started succesfully. Running the provisioning"
 
 # Provision private key to fetch cloud-vm puppet module
 PUPPET_CONF=${puppet_conf:-default}
-PUPPET_CLOUD_VM_REPO_URL="https://${BB_USERNAME}:${BB_PASSWORD}@${BB_REPO}"
+PUPPET_CLOUD_VM_REPO_URL="${BB_REPO}"
 
 cat << EOF > provision.sh
 version=\$(lsb_release -rs | cut -f1 -d.)
 sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-el-\$version.noarch.rpm
 yum install -y puppet git
 mkdir -p /etc/puppet/modules
-git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
+GIT_SSH_COMMAND="ssh -i ${JENKINS_SLAVE_PRIVATE_KEY}" git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
 wget --no-check-certificate https://raw.githubusercontent.com/cnaf/config-scripts/master/configure-deployment-node.sh -O /root/configure-deployment-node.sh
 sh /root/configure-deployment-node.sh
 EOF
