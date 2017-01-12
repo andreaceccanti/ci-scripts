@@ -114,7 +114,8 @@ cat << EOF > provision.sh
 set -x
 mkdir -p /etc/puppet/modules
 chown root:root /tmp/jenkins-slave-private-key.pem && chmod 0400 /tmp/jenkins-slave-private-key.pem
-echo "ssh -i /tmp/jenkins-slave-private-key.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \$*" > git_ssh
+echo 'ssh -i /tmp/jenkins-slave-private-key.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=false $*' > git_ssh
+cat ./git_ssh
 chmod +x ./git_ssh
 GIT_SSH=./git_ssh git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
 wget --no-check-certificate ${CONFIG_SCRIPT_URL} -O /root/configure-slave.sh
