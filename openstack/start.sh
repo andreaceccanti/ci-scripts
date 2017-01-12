@@ -114,7 +114,9 @@ version=\$(lsb_release -rs | cut -f1 -d.)
 sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-el-\$version.noarch.rpm
 yum install -y puppet git
 mkdir -p /etc/puppet/modules
-GIT_SSH_COMMAND="ssh -i ${JENKINS_SLAVE_PRIVATE_KEY}" git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
+echo "ssh -i ${JENKINS_SLAVE_PRIVATE_KEY} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \$*" > git_ssh
+chmod +x ./git_ssh
+GIT_SSH=./git_ssh git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
 wget --no-check-certificate https://raw.githubusercontent.com/cnaf/config-scripts/master/configure-deployment-node.sh -O /root/configure-deployment-node.sh
 sh /root/configure-deployment-node.sh
 EOF

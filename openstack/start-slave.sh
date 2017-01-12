@@ -112,7 +112,9 @@ CONFIG_SCRIPT_URL="https://raw.githubusercontent.com/cnaf/config-scripts/master/
 
 cat << EOF > provision.sh
 mkdir -p /etc/puppet/modules
-GIT_SSH_COMMAND="ssh -i ${JENKINS_SLAVE_PRIVATE_KEY}" git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
+echo "ssh -i ${JENKINS_SLAVE_PRIVATE_KEY} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \$*" > git_ssh
+chmod +x ./git_ssh
+GIT_SSH=./git_ssh git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
 wget --no-check-certificate ${CONFIG_SCRIPT_URL} -O /root/configure-slave.sh
 MVN_REPO_CNAF_USER=${MVN_REPO_CNAF_USER} MVN_REPO_CNAF_PASSWORD=${MVN_REPO_CNAF_PASSWORD} sh /root/configure-slave.sh
 EOF
