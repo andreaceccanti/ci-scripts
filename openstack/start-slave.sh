@@ -112,15 +112,15 @@ CONFIG_SCRIPT_URL="https://raw.githubusercontent.com/cnaf/config-scripts/master/
 
 cat << EOF > provision.sh
 mkdir -p /etc/puppet/modules
-echo "ssh -i ${JENKINS_SLAVE_PRIVATE_KEY} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \$*" > git_ssh
+echo "ssh -i ~/jenkins-slave-private-key.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \$*" > git_ssh
 chmod +x ./git_ssh
 GIT_SSH=./git_ssh git clone ${PUPPET_CLOUD_VM_REPO_URL} /etc/puppet/modules/puppet-cloud-vm
 wget --no-check-certificate ${CONFIG_SCRIPT_URL} -O /root/configure-slave.sh
 MVN_REPO_CNAF_USER=${MVN_REPO_CNAF_USER} MVN_REPO_CNAF_PASSWORD=${MVN_REPO_CNAF_PASSWORD} sh /root/configure-slave.sh
 EOF
 
-scp ${SSH_OPTIONS} provision.sh ${EC2_USER}@${MACHINE_HOSTNAME}:
-[ $? -ne 0 ] && terminate "Error sending provision.sh to ${MACHINE_HOSTNAME}"
+scp ${SSH_OPTIONS} provision.sh ${JENKINS_SLAVE_PRIVATE_KEY} ${EC2_USER}@${MACHINE_HOSTNAME}:
+[ $? -ne 0 ] && terminate "Error sending provision.sh and Jenkins ssh key to ${MACHINE_HOSTNAME}"
 
 ssh -tt ${SSH_OPTIONS} ${EC2_USER}@${MACHINE_HOSTNAME} "sudo sh provision.sh"
 [ $? -ne 0 ] && terminate "Error during provisioning."
