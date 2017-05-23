@@ -29,15 +29,15 @@ function cleanup(){
 
 trap cleanup EXIT
 
-MODE="${MODE:-clean}"
-PLATFORM="${PLATFORM:-centos6}"
+MODE=${MODE:-clean}
+PLATFORM=${PLATFORM:-centos6}
 STORM_REPO="${STORM_REPO:-http://radiohead.cnaf.infn.it:9999/view/REPOS/job/repo_storm_develop_SL6/lastSuccessfulBuild/artifact/storm_develop_sl6.repo}"
 DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST:-""}
 STORAGE_PREFIX=${STORAGE_PREFIX:-/storage}
-TESTSUITE_BRANCH="${TESTSUITE_BRANCH:-develop}"
+TESTSUITE_BRANCH=${TESTSUITE_BRANCH:-develop}
 CLIENT_ID=${CLIENT_ID:-""}
 CLIENT_SECRET=${CLIENT_SECRET:-""}
-STORM_DEPLOYMENT_TEST_BRANCH="${STORM_DEPLOYMENT_TEST_BRANCH:-master}
+STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH:-master}
 
 
 if [ -n "${TESTSUITE_EXCLUDE}" ]; then
