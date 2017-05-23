@@ -92,10 +92,10 @@ deploy_redis_id=`docker run -d \
 
 # run CDMI StoRM
 deploy_cdmi_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" \
-  -e STORM_BACKEND_HOST="docker-storm.cnaf.infn.it" \
-  -e CLIENT_ID=${CLIENT_ID} \
-  -e CLIENT_SECRET=${CLIENT_SECRET} \
-  -e REDIS_HOSTNAME="redis.cnaf.infn.it" \
+  -e "STORM_BACKEND_HOST=docker-storm.cnaf.infn.it" \
+  -e "CLIENT_ID=${CLIENT_ID}" \
+  -e "CLIENT_SECRET=${CLIENT_SECRET}" \
+  -e "REDIS_HOSTNAME=redis.cnaf.infn.it" \
   --name $cdmiserver_name \
   --link $redis_name:redis.cnaf.infn.it \
   -h cdmi-storm.cnaf.infn.it \
