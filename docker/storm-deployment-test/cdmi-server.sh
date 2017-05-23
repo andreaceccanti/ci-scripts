@@ -35,6 +35,10 @@ STORM_REPO="${STORM_REPO:-http://radiohead.cnaf.infn.it:9999/view/REPOS/job/repo
 DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST:-""}
 STORAGE_PREFIX=${STORAGE_PREFIX:-/storage}
 TESTSUITE_BRANCH="${TESTSUITE_BRANCH:-develop}"
+CLIENT_ID=${CLIENT_ID:-""}
+CLIENT_SECRET=${CLIENT_SECRET:-""}
+STORM_DEPLOYMENT_TEST_BRANCH="${STORM_DEPLOYMENT_TEST_BRANCH:-master}
+
 
 if [ -n "${TESTSUITE_EXCLUDE}" ]; then
   EXCLUDE_CLAUSE="-e TESTSUITE_EXCLUDE=${TESTSUITE_EXCLUDE}"
@@ -65,6 +69,7 @@ cdmi_image=${REGISTRY_PREFIX}italiangrid/cdmi-storm
 
 # run StoRM deployment and get container id
 deploy_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
+  -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
   -h docker-storm.cnaf.infn.it \
   -v $storage_dir:/storage:rw \
   -v $gridmap_dir:/etc/grid-security/gridmapdir:rw \
@@ -88,8 +93,8 @@ deploy_redis_id=`docker run -d \
 # run CDMI StoRM
 deploy_cdmi_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" \
   -e STORM_BACKEND_HOST="docker-storm.cnaf.infn.it" \
-  -e CLIENT_ID="838129a5-84ca-4dc4-bfd8-421ee317aabd" \
-  -e CLIENT_SECRET="KkR8ktvBc20gMuZQyq1ENeCnfMQ2jQoH8TXfBwrEAaawT3oSYA3XO-vfGx02gVNeup9CvrOsVLq6Q3OYI3RMSw" \
+  -e CLIENT_ID=${CLIENT_ID} \
+  -e CLIENT_SECRET=${CLIENT_SECRET} \
   -e REDIS_HOSTNAME="redis.cnaf.infn.it" \
   --name $cdmiserver_name \
   --link $redis_name:redis.cnaf.infn.it \
