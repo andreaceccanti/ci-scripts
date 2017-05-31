@@ -29,15 +29,34 @@ function cleanup(){
 
 trap cleanup EXIT
 
-MODE=${MODE:-clean}
-PLATFORM=${PLATFORM:-centos6}
-STORM_REPO="${STORM_REPO:-http://radiohead.cnaf.infn.it:9999/view/REPOS/job/repo_storm_develop_SL6/lastSuccessfulBuild/artifact/storm_develop_sl6.repo}"
+echo "Executing cdmi-server.sh ..."
+
+MODE=${MODE:-"clean"}
+echo "MODE=${MODE}"
+
+PLATFORM=${PLATFORM:-"centos6"}
+echo "PLATFORM=${PLATFORM}"
+
+STORM_REPO=${STORM_REPO:-"https://ci.cloud.cnaf.infn.it/view/storm/job/pkg.storm/job/dev%252Fcdmi_plugin/lastSuccessfulBuild/artifact/repo/storm-dev/cdmi_plugin-centos6.repo"}
+echo "STORM_REPO=${STORM_REPO}"
+
 DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST:-""}
-STORAGE_PREFIX=${STORAGE_PREFIX:-/storage}
-TESTSUITE_BRANCH=${TESTSUITE_BRANCH:-develop}
+echo "DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST}"
+
+STORAGE_PREFIX=${STORAGE_PREFIX:-"/storage"}
+echo "STORAGE_PREFIX=${STORAGE_PREFIX}"
+
+TESTSUITE_BRANCH=${TESTSUITE_BRANCH:-"develop"}
+echo "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}"
+
 CLIENT_ID=${CLIENT_ID:-""}
+echo "CLIENT_ID=${CLIENT_ID}"
+
 CLIENT_SECRET=${CLIENT_SECRET:-""}
-STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH:-master}
+echo "CLIENT_SECRET=${CLIENT_SECRET}"
+
+STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH:-"master"}
+echo "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}"
 
 
 if [ -n "${TESTSUITE_EXCLUDE}" ]; then
@@ -45,12 +64,14 @@ if [ -n "${TESTSUITE_EXCLUDE}" ]; then
 else
   EXCLUDE_CLAUSE="-e TESTSUITE_EXCLUDE=to-be-fixed"
 fi
+echo "EXCLUDE_CLAUSE=${EXCLUDE_CLAUSE}"
 
 if [ -n "${DOCKER_REGISTRY_HOST}" ]; then
   REGISTRY_PREFIX=${DOCKER_REGISTRY_HOST}/
 else
   REGISTRY_PREFIX=""
 fi
+echo "REGISTRY_PREFIX=${REGISTRY_PREFIX}"
 
 TEST_ID=$(mktemp -u storm-XXXXXX)
 
