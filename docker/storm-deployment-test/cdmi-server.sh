@@ -102,7 +102,7 @@ deploy_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" -e "MODE=${MODE}" -e "PLA
 deployment_name=`docker inspect -f "{{ .Name }}" $deploy_id|cut -c2-`
 testsuite_name="ts-linked-to-$deployment_name"
 redis_name="redis-linked-to-$deployment_name"
-cdmiserver_name="cdmi-server-linked-to-$deployment_name"
+cdmiserver_name="cdmi-linked-to-$deployment_name"
 
 # run redis server
 deploy_redis_id=`docker run -d \
