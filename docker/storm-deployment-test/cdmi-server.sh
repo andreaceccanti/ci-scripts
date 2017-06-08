@@ -37,8 +37,12 @@ echo "MODE=${MODE}"
 PLATFORM=${PLATFORM:-"centos6"}
 echo "PLATFORM=${PLATFORM}"
 
-STORM_REPO=${STORM_REPO:-"https://ci.cloud.cnaf.infn.it/view/storm/job/pkg.storm/job/dev%252Fcdmi_plugin/lastSuccessfulBuild/artifact/repo/storm-dev/cdmi_plugin-centos6.repo"}
-echo "STORM_REPO=${STORM_REPO}"
+if [ -n "${STORM_REPO}" ]; then
+  STORM_REPO=${STORM_REPO}
+else
+  echo "ERROR: STORM_REPO not found. Please check your environment variables."
+  exit 1
+fi
 
 DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST:-""}
 echo "DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST}"
@@ -57,7 +61,6 @@ echo "CLIENT_SECRET=${CLIENT_SECRET}"
 
 STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH:-"master"}
 echo "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}"
-
 
 if [ -n "${TESTSUITE_EXCLUDE}" ]; then
   EXCLUDE_CLAUSE="-e TESTSUITE_EXCLUDE=${TESTSUITE_EXCLUDE}"

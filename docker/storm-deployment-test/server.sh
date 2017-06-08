@@ -21,12 +21,32 @@ function cleanup(){
 
 trap cleanup EXIT
 
-MODE="${MODE:-clean}"
-PLATFORM="${PLATFORM:-centos6}"
-STORM_REPO="${STORM_REPO:-http://radiohead.cnaf.infn.it:9999/view/REPOS/job/repo_storm_develop_SL6/lastSuccessfulBuild/artifact/storm_develop_sl6.repo}"
+echo "Executing server.sh ..."
+
+MODE=${MODE:-"clean"}
+echo "MODE=${MODE}"
+
+PLATFORM=${PLATFORM:-"centos6"}
+echo "PLATFORM=${PLATFORM}"
+
+if [ -n "${STORM_REPO}" ]; then
+  STORM_REPO=${STORM_REPO}
+else
+  echo "ERROR: STORM_REPO not found. Please check your environment variables."
+  exit 1
+fi
+
 DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST:-""}
-STORAGE_PREFIX=${STORAGE_PREFIX:-/storage}
-TESTSUITE_BRANCH="${TESTSUITE_BRANCH:-develop}"
+echo "DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST}"
+
+STORAGE_PREFIX=${STORAGE_PREFIX:-"/storage"}
+echo "STORAGE_PREFIX=${STORAGE_PREFIX}"
+
+TESTSUITE_BRANCH=${TESTSUITE_BRANCH:-"develop"}
+echo "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}"
+
+STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH:-"master"}
+echo "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}"
 
 if [ -n "${TESTSUITE_EXCLUDE}" ]; then
   EXCLUDE_CLAUSE="-e TESTSUITE_EXCLUDE=${TESTSUITE_EXCLUDE}"
@@ -56,6 +76,7 @@ docker pull $testsuite_image
 
 # run StoRM deployment and get container id
 deploy_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
+  -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
   -h docker-storm.cnaf.infn.it \
   -v $storage_dir:/storage:rw \
   -v $gridmap_dir:/etc/grid-security/gridmapdir:rw \
