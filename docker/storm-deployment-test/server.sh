@@ -29,13 +29,6 @@ echo "MODE=${MODE}"
 PLATFORM=${PLATFORM:-"centos6"}
 echo "PLATFORM=${PLATFORM}"
 
-if [ -n "${STORM_REPO}" ]; then
-  STORM_REPO=${STORM_REPO}
-else
-  echo "ERROR: STORM_REPO not found. Please check your environment variables."
-  exit 1
-fi
-
 DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST:-""}
 echo "DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST}"
 
@@ -75,7 +68,7 @@ testsuite_image=${REGISTRY_PREFIX}italiangrid/storm-testsuite
 docker pull $testsuite_image
 
 # run StoRM deployment and get container id
-deploy_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
+deploy_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
   -h docker-storm.cnaf.infn.it \
   -v $storage_dir:/storage:rw \
