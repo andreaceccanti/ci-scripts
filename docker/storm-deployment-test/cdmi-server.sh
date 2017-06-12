@@ -113,14 +113,14 @@ redis_name="redis-linked-to-$deployment_name"
 cdmiserver_name="cdmi-linked-to-$deployment_name"
 
 # run redis server
-deploy_redis_id=`docker run -d \
-  -h redis.cnaf.infn.it \
+docker run -d -h redis.cnaf.infn.it \
+  --link $deployment_name:docker-storm.cnaf.infn.it \
   -v /etc/localtime:/etc/localtime:ro \
   --name $redis_name \
-  redis:latest`
+  redis:latest
 
 # run CDMI StoRM
-deploy_cdmi_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
+docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
   -e "CLIENT_ID=${CLIENT_ID}" \
   -e "CLIENT_SECRET=${CLIENT_SECRET}" \
@@ -129,11 +129,11 @@ deploy_cdmi_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   --link $deployment_name:docker-storm.cnaf.infn.it \
   -h cdmi-storm.cnaf.infn.it \
   -v /etc/localtime:/etc/localtime:ro \
-  $cdmi_image`
+  $cdmi_image
 
 # run StoRM testsuite when deployment is over
-docker run -e "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}" \
-  $EXCLUDE_CLAUSE --link $deployment_name:docker-storm.cnaf.infn.it \
+docker run -e "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}" $EXCLUDE_CLAUSE \
+  --link $deployment_name:docker-storm.cnaf.infn.it \
   --link $cdmiserver_name:cdmi-storm.cnaf.infn.it \
   -v /etc/localtime:/etc/localtime:ro \
   --name $testsuite_name \
