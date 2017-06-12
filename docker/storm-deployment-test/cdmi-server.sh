@@ -37,13 +37,6 @@ echo "MODE=${MODE}"
 PLATFORM=${PLATFORM:-"centos6"}
 echo "PLATFORM=${PLATFORM}"
 
-if [ -n "${STORM_REPO}" ]; then
-  STORM_REPO=${STORM_REPO}
-else
-  echo "ERROR: STORM_REPO not found. Please check your environment variables."
-  exit 1
-fi
-
 DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST:-""}
 echo "DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST}"
 
@@ -92,7 +85,7 @@ testsuite_image=${REGISTRY_PREFIX}italiangrid/storm-testsuite
 cdmi_image=${REGISTRY_PREFIX}italiangrid/cdmi-storm
 
 # run StoRM deployment and get container id
-deploy_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
+deploy_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
   -h docker-storm.cnaf.infn.it \
   -v $storage_dir:/storage:rw \
@@ -115,11 +108,9 @@ deploy_redis_id=`docker run -d \
   redis:latest`
 
 # run CDMI StoRM
-deploy_cdmi_id=`docker run -d -e "STORM_REPO=${STORM_REPO}" \
-  -e "STORM_BACKEND_HOST=docker-storm.cnaf.infn.it" \
+deploy_cdmi_id=`docker run -d -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
   -e "CLIENT_ID=${CLIENT_ID}" \
   -e "CLIENT_SECRET=${CLIENT_SECRET}" \
-  -e "REDIS_HOSTNAME=redis.cnaf.infn.it" \
   --name $cdmiserver_name \
   --link $redis_name:redis.cnaf.infn.it \
   -h cdmi-storm.cnaf.infn.it \
