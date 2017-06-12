@@ -90,10 +90,11 @@ mkdir -p $gridmap_dir
 
 # Grab latest images
 deployment_image=${REGISTRY_PREFIX}italiangrid/storm-deployment-test:${PLATFORM}
-#docker pull $deployment_image
+docker pull $deployment_image
 testsuite_image=${REGISTRY_PREFIX}italiangrid/storm-testsuite
-#docker pull $testsuite_image
+docker pull $testsuite_image
 cdmi_image=${REGISTRY_PREFIX}italiangrid/cdmi-storm
+dpcker pull $cdmi_image
 
 # run StoRM deployment and get container id
 deploy_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
