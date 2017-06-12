@@ -23,8 +23,8 @@ function cleanup(){
   docker logs --tail="all" $deployment_name &> storm-deployment.log || echo "Cannot get the deployment log"
 
   # stop containers
-  echo "Stop containers ... $deployment_name $testsuite_name $cdmiserver_name $redis_name"
-  docker stop $deployment_name $testsuite_name $cdmiserver_name $redis_name
+  echo "Stop containers ... $deployment_name $redis_name"
+  docker stop $deployment_name $redis_name
 
   # remove containers
   echo "Remove containers ... $deployment_name $testsuite_name $cdmiserver_name $redis_name"
@@ -124,6 +124,7 @@ deploy_cdmi_id=`docker run -d -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMEN
   -e "CLIENT_SECRET=${CLIENT_SECRET}" \
   --name $cdmiserver_name \
   --link $redis_name:redis.cnaf.infn.it \
+  --link $deployment_name:docker-storm.cnaf.infn.it \
   -h cdmi-storm.cnaf.infn.it \
   -v /etc/localtime:/etc/localtime:ro \
   $cdmi_image`
