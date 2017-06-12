@@ -119,7 +119,8 @@ deploy_redis_id=`docker run -d \
   redis:latest`
 
 # run CDMI StoRM
-deploy_cdmi_id=`docker run -d -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
+deploy_cdmi_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
+  -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
   -e "CLIENT_ID=${CLIENT_ID}" \
   -e "CLIENT_SECRET=${CLIENT_SECRET}" \
   --name $cdmiserver_name \
