@@ -3,27 +3,38 @@ set -ex
 
 function cleanup(){
   # copy testsuite reports
+  echo "Copy storm-testsuite reports ..."
   docker cp $testsuite_name:/home/tester/storm-testsuite/reports $(pwd) || echo "Cannot copy tests report"
 
   # copy StoRM logs
+  echo "Copy storm services logs ..."
   docker cp $deployment_name:/var/log/storm $(pwd) || echo "Cannot copy StoRM logs"
 
   # copy cdmi-server logs
+  echo "Copy cdmi-storm docker logs ... $cdmiserver_name"
   docker logs --tail="all" $cdmiserver_name &> cdmi-server.log || echo "Cannot get the cdmi-server log"
 
-  # copy cdmi-server logs
+  # copy redis-server logs
+  echo "Copy redis-server docker logs ... $redis_name"
   docker logs --tail="all" $redis_name &> redis-server.log || echo "Cannot get the redis-server log"
 
   # get deployment log
+  echo "Copy storm deployment docker logs ... $deployment_name"
   docker logs --tail="all" $deployment_name &> storm-deployment.log || echo "Cannot get the deployment log"
 
+  # stop containers
+  echo "Stop containers ... $deployment_name $testsuite_name $cdmiserver_name $redis_name"
+  docker stop $deployment_name $testsuite_name $cdmiserver_name $redis_name
+
   # remove containers
+  echo "Remove containers ... $deployment_name $testsuite_name $cdmiserver_name $redis_name"
   docker rm -fv $deployment_name || echo "Cannot remove the deployment container"
   docker rm -fv $testsuite_name || echo "Cannot remove the testsuite container"
   docker rm -fv $cdmiserver_name || echo "Cannot remove the cdmi-server container"
   docker rm -fv $redis_name || echo "Cannot remove the redis-server container"
 
   # remove storage files
+  echo "Remove storage dir ... ${storage_dir}"
   rm -rf ${storage_dir} || echo "Cannot remove the storage dir"
 }
 
