@@ -54,14 +54,8 @@ echo "DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST}"
 STORAGE_PREFIX=${STORAGE_PREFIX:-"/storage"}
 echo "STORAGE_PREFIX=${STORAGE_PREFIX}"
 
-TESTSUITE_BRANCH=${TESTSUITE_BRANCH:-"develop"}
-echo "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}"
-
-CLIENT_ID=${CLIENT_ID:-""}
-echo "CLIENT_ID=${CLIENT_ID}"
-
-CLIENT_SECRET=${CLIENT_SECRET:-""}
-echo "CLIENT_SECRET=${CLIENT_SECRET}"
+#TESTSUITE_BRANCH=${TESTSUITE_BRANCH:-"develop"}
+#echo "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}"
 
 STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH:-"master"}
 echo "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}"
@@ -96,6 +90,12 @@ docker pull $testsuite_image
 cdmi_image=${REGISTRY_PREFIX}italiangrid/cdmi-storm
 docker pull $cdmi_image
 
+wget https://raw.githubusercontent.com/italiangrid/storm-deployment-test/${STORM_DEPLOYMENT_TEST_BRANCH}/common/input.env
+source input.env
+
+if [ -z ${TESTSUITE_BRANCH+x} ]; then echo "TESTSUITE_BRANCH is unset"; exit 1; fi
+if [ -z ${STORM_REPO+x} ]; then echo "STORM_REPO is unset"; exit 1; fi
+
 # run StoRM deployment and get container id
 deploy_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
@@ -122,8 +122,7 @@ docker run -d -h redis.cnaf.infn.it \
 # run CDMI StoRM
 docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
-  -e "CLIENT_ID=${CLIENT_ID}" \
-  -e "CLIENT_SECRET=${CLIENT_SECRET}" \
+  -e "REDIS_HOSTNAME=redis.cnaf.infn.it" \
   --name $cdmiserver_name \
   --link $redis_name:redis.cnaf.infn.it \
   --link $deployment_name:docker-storm.cnaf.infn.it \
