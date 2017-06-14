@@ -74,6 +74,9 @@ else
 fi
 echo "REGISTRY_PREFIX=${REGISTRY_PREFIX}"
 
+if [ -z ${CDMI_CLIENT_SECRET+x} ]; then echo "CDMI_CLIENT_SECRET is unset"; exit 1; fi
+if [ -z ${IAM_USER_PASSWORD+x} ]; then echo "IAM_USER_PASSWORD is unset"; exit 1; fi
+
 TEST_ID=$(mktemp -u storm-XXXXXX)
 
 storage_dir=${STORAGE_PREFIX}/$MODE-$PLATFORM-$TEST_ID-storage
@@ -122,6 +125,7 @@ docker run -d -h redis.cnaf.infn.it \
 # run CDMI StoRM
 docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
+  -e "CDMI_CLIENT_SECRET=${CDMI_CLIENT_SECRET}" \
   -e "REDIS_HOSTNAME=redis.cnaf.infn.it" \
   --name $cdmiserver_name \
   --link $redis_name:redis.cnaf.infn.it \
@@ -131,7 +135,10 @@ docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   $cdmi_image
 
 # run StoRM testsuite when deployment is over
-docker run -e "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}" $EXCLUDE_CLAUSE \
+docker run -e "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}" \
+  -e "CDMI_CLIENT_SECRET=${CDMI_CLIENT_SECRET}" \
+  -e "IAM_USER_PASSWORD=${IAM_USER_PASSWORD}" \
+  $EXCLUDE_CLAUSE \
   --link $deployment_name:docker-storm.cnaf.infn.it \
   --link $cdmiserver_name:cdmi-storm.cnaf.infn.it \
   -v /etc/localtime:/etc/localtime:ro \
