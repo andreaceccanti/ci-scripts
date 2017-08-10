@@ -50,7 +50,7 @@ fi
 # run VOMS deployment
 if [ -z "${SKIP_SERVER}" ]; then
   remove_container voms-server
-  docker pull ${REGISTRY_PREFIX}italiangrid/voms-deployment-test
+  docker pull ${REGISTRY_PREFIX}italiangrid/voms-deployment-test:latest
   docker run -d \
     -e "VOMS_REPO=${VOMS_REPO}" \
     -e "MODE=${MODE}" \
@@ -64,7 +64,7 @@ fi
 remove_container voms-ts
 
 # run VOMS testsuite when deployment is over
-docker pull ${REGISTRY_PREFIX}italiangrid/voms-ts
+docker pull ${REGISTRY_PREFIX}italiangrid/voms-ts:latest
 docker run \
   -e "VOMS_REPO=${VOMS_REPO}" \
   -e "VO1=${VO1}" \
