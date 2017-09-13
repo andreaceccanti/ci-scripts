@@ -42,6 +42,9 @@ trap cleanup EXIT
 
 echo "Executing cdmi-server.sh ..."
 
+if [ -z ${CDMI_CLIENT_SECRET+x} ]; then echo "CDMI_CLIENT_SECRET is unset"; exit 1; fi
+if [ -z ${IAM_USER_PASSWORD+x} ]; then echo "IAM_USER_PASSWORD is unset"; exit 1; fi
+
 MODE=${MODE:-"clean"}
 echo "MODE=${MODE}"
 
@@ -54,11 +57,11 @@ echo "DOCKER_REGISTRY_HOST=${DOCKER_REGISTRY_HOST}"
 STORAGE_PREFIX=${STORAGE_PREFIX:-"/storage"}
 echo "STORAGE_PREFIX=${STORAGE_PREFIX}"
 
-#TESTSUITE_BRANCH=${TESTSUITE_BRANCH:-"develop"}
-#echo "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}"
-
 STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH:-"master"}
 echo "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}"
+
+TESTSUITE_BRANCH=${TESTSUITE_BRANCH:-"master"}
+echo "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}"
 
 if [ -n "${TESTSUITE_EXCLUDE}" ]; then
   EXCLUDE_CLAUSE="-e TESTSUITE_EXCLUDE=${TESTSUITE_EXCLUDE}"
@@ -73,9 +76,6 @@ else
   REGISTRY_PREFIX=""
 fi
 echo "REGISTRY_PREFIX=${REGISTRY_PREFIX}"
-
-if [ -z ${CDMI_CLIENT_SECRET+x} ]; then echo "CDMI_CLIENT_SECRET is unset"; exit 1; fi
-if [ -z ${IAM_USER_PASSWORD+x} ]; then echo "IAM_USER_PASSWORD is unset"; exit 1; fi
 
 TEST_ID=$(mktemp -u storm-XXXXXX)
 
@@ -92,12 +92,6 @@ testsuite_image=${REGISTRY_PREFIX}italiangrid/storm-testsuite
 docker pull $testsuite_image
 cdmi_image=${REGISTRY_PREFIX}italiangrid/cdmi-storm
 docker pull $cdmi_image
-
-wget https://raw.githubusercontent.com/italiangrid/storm-deployment-test/${STORM_DEPLOYMENT_TEST_BRANCH}/common/input.env
-source input.env
-
-if [ -z ${TESTSUITE_BRANCH+x} ]; then echo "TESTSUITE_BRANCH is unset"; exit 1; fi
-if [ -z ${STORM_REPO+x} ]; then echo "STORM_REPO is unset"; exit 1; fi
 
 # run StoRM deployment and get container id
 deploy_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
@@ -123,7 +117,9 @@ docker run -d -h redis.cnaf.infn.it \
   redis:latest
 
 # run CDMI StoRM
-docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
+docker run -d \
+  -e "MODE=${MODE}" \
+  -e "PLATFORM=${PLATFORM}" \
   -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
   -e "CDMI_CLIENT_SECRET=${CDMI_CLIENT_SECRET}" \
   -e "REDIS_HOSTNAME=redis.cnaf.infn.it" \
