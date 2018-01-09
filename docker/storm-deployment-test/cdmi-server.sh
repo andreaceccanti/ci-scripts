@@ -33,9 +33,6 @@ function cleanup(){
   docker rm -fv $cdmiserver_name || echo "Cannot remove the cdmi-server container"
   docker rm -fv $redis_name || echo "Cannot remove the redis-server container"
 
-  # remove storage files
-  echo "Remove storage dir ... ${storage_dir}"
-  rm -rf ${storage_dir} || echo "Cannot remove the storage dir"
 }
 
 trap cleanup EXIT
@@ -79,12 +76,6 @@ echo "REGISTRY_PREFIX=${REGISTRY_PREFIX}"
 
 TEST_ID=$(mktemp -u storm-XXXXXX)
 
-storage_dir=${STORAGE_PREFIX}/$MODE-$PLATFORM-$TEST_ID-storage
-gridmap_dir=${STORAGE_PREFIX}/$MODE-$PLATFORM-$TEST_ID-gridmapdir
-
-mkdir -p $storage_dir
-mkdir -p $gridmap_dir
-
 # Grab latest images
 deployment_image=${REGISTRY_PREFIX}italiangrid/storm-deployment-test:${PLATFORM}
 docker pull $deployment_image
@@ -97,8 +88,6 @@ docker pull $cdmi_image
 deploy_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
   -h docker-storm.cnaf.infn.it \
-  -v $storage_dir:/storage:rw \
-  -v $gridmap_dir:/etc/grid-security/gridmapdir:rw \
   -v /etc/localtime:/etc/localtime:ro \
   $deployment_image \
   /bin/sh deploy.sh`
