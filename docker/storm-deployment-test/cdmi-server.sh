@@ -79,14 +79,6 @@ else
 fi
 echo "REGISTRY_PREFIX=${REGISTRY_PREFIX}"
 
-TEST_ID=$(mktemp -u storm-XXXXXX)
-
-storage_dir=${STORAGE_PREFIX}/$MODE-$PLATFORM-$TEST_ID-storage
-gridmap_dir=${STORAGE_PREFIX}/$MODE-$PLATFORM-$TEST_ID-gridmapdir
-
-mkdir -p $storage_dir
-mkdir -p $gridmap_dir
-
 # Grab latest images
 deployment_image=${REGISTRY_PREFIX}italiangrid/storm-deployment-test:${PLATFORM}
 if [ -z "${SKIP_IMAGE_PULL}" ]; then
@@ -105,8 +97,6 @@ fi
 deploy_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   -e "STORM_DEPLOYMENT_TEST_BRANCH=${STORM_DEPLOYMENT_TEST_BRANCH}" \
   -h docker-storm.cnaf.infn.it \
-  -v $storage_dir:/storage:rw \
-  -v $gridmap_dir:/etc/grid-security/gridmapdir:rw \
   $deployment_image \
   /bin/sh deploy.sh`
 
