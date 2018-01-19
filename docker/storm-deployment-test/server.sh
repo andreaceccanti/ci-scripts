@@ -63,9 +63,13 @@ mkdir -p $gridmap_dir
 
 # Grab latest images
 deployment_image=${REGISTRY_PREFIX}italiangrid/storm-deployment-test:${PLATFORM}
-docker pull $deployment_image
+if [ -z "${SKIP_IMAGE_PULL}" ]; then
+  docker pull $deployment_image
+fi
 testsuite_image=${REGISTRY_PREFIX}italiangrid/storm-testsuite
-docker pull $testsuite_image
+if [ -z "${SKIP_IMAGE_PULL}" ]; then
+  docker pull $testsuite_image
+fi
 
 # run StoRM deployment and get container id
 deploy_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
@@ -73,7 +77,6 @@ deploy_id=`docker run -d -e "MODE=${MODE}" -e "PLATFORM=${PLATFORM}" \
   -h docker-storm.cnaf.infn.it \
   -v $storage_dir:/storage:rw \
   -v $gridmap_dir:/etc/grid-security/gridmapdir:rw \
-  -v /etc/localtime:/etc/localtime:ro \
   $deployment_image \
   /bin/sh deploy.sh`
 
@@ -84,6 +87,5 @@ testsuite_name="ts-linked-to-$deployment_name"
 # run StoRM testsuite when deployment is over
 docker run -e "TESTSUITE_BRANCH=${TESTSUITE_BRANCH}" \
   $EXCLUDE_CLAUSE --link $deployment_name:docker-storm.cnaf.infn.it \
-  -v /etc/localtime:/etc/localtime:ro \
   --name $testsuite_name \
   $testsuite_image
